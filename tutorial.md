@@ -49,39 +49,41 @@ Then either run step 3A or 3B. Discuss with me if you're unsure which is better,
 
 - make em and md mdps for your FEP. Use the ones you normally use, and add the following code to the bottom:
 
-For beads with no charges:
+For beads with no charges (gmx 2019 and later):
 
 ```
-free_energy             = yes
-init_lambda_state       = #INIT#
-delta_lambda            = 0        
-calc-lambda-neighbors   = -1  
-;init_lambda_state        0    1    2    3    4    5    6    7    8    9    10   11   12   13    14    15    16    17    18    19    20   
-; the vdw_lambdas are highly tweakable – evenly spaced lambdas also work
-vdw_lambdas              = 0 0.1 0.2 0.3 0.4 0.5 0.55 0.60 0.65 0.70 0.75 0.775 0.800 0.825 0.850 0.875 0.900 0.925 0.950 0.975 1
-sc-alpha                 = 0.5      
-sc-coul                  = no
-sc-power                 = 1      
-sc-sigma                 = 0.3    
-nstdhdl                  = 100
+free-energy             = yes
+init-lambda-state       = #INIT#
+delta-lambda            = 0
+calc-lambda-neighbors   = -1
+;init-lambda-state        0  1   2   3   4   5   6   7    8    9    10   11    12   13    14    15    16    17    18    19    20   
+;; the vdw_lambdas are highly tweakable – evenly spaced lambdas also work
+vdw-lambdas             = 0 0.1 0.2 0.3 0.4 0.5 0.55 0.60 0.65 0.70 0.75 0.775 0.800 0.825 0.850 0.875 0.900 0.925 0.950 0.975 1
+sc-alpha                = 0.5     ; LJ
+sc-coul                 = no      ; means linear interpolation of Coulomb, Yes would soft core Coulomb too.
+sc-power                = 1       ; only 1 or 2 supported
+sc-sigma                = 0.3
+nstdhdl                 = 1     ; write to dhdl at each step
+nstcalcenergy           = 1
 ```
 
 For beads with charges:
 
 ```
-free_energy             = yes
-init_lambda_state       = #INIT#
-delta_lambda            = 0        
-calc-lambda-neighbors   = -1  
-;init_lambda_state        0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20
+free-energy             = yes
+init-lambda-state       = #INIT#
+delta-lambda            = 0
+calc-lambda-neighbors   = -1 
+;init-lambda0state        0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20
 ; this is for removing charged beads – for adding grow vdw_lambdas before coul_lambdas 
-vdw_lambdas              = 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.10 0.20 0.30 0.40 0.50 0.60 0.70 0.80 0.90 1.00
-coul_lambdas             = 0.00 0.10 0.20 0.30 0.40 0.50 0.60 0.70 0.80 0.90 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00
-sc-alpha                 = 0.5      
-sc-coul                  = no
-sc-power                 = 1      
-sc-sigma                 = 0.3    
-nstdhdl                  = 100
+vdw-lambdas             = 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.10 0.20 0.30 0.40 0.50 0.60 0.70 0.80 0.90 1.00
+coul-lambdas            = 0.00 0.10 0.20 0.30 0.40 0.50 0.60 0.70 0.80 0.90 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00
+sc-alpha                = 0.5     ; LJ
+sc-coul                 = no      ; means linear interpolation of Coulomb, Yes would soft core Coulomb too.
+sc-power                = 1       ; only 1 or 2 supported
+sc-sigma                = 0.3
+nstdhdl                 = 1     ; write to dhdl at each step
+nstcalcenergy           = 1
 ```
 
 - then make a short script to run an em and md for each window (maybe I should write one that anyone can use)
