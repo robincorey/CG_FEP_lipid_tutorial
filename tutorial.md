@@ -1,19 +1,23 @@
-***this is a work in progress*** 
+***note that this is a work in progress for internal reference only*** 
 
-Initial setup
-====
+# Lipid CG FEP overview
+
+How to run equilibrium or non-equilibrium FEP for lipids or lipid-like molecules in Martini using gmx.
+
+## Step 1: Initial setup
 
 Steps needed before running any FEP:
-•	setup "free" and "bound" sims – ideally these should be of similar size with respect to number of lipids.
-o	free = single lipid of interest in simple membrane with no protein
-o	bound = lipid bound to your protein
-•	Run an equilibration sim of each until 1 µs or so. 
-2. Prepare FEP
-•	decide on what your two states will be. 
-o	e.g. state 0 = lipid of interest, state 1 = generic lipid. 
-o	e.g. state 0 = two acyl tails, state 1 = one acyl tail
-•	make an itp file for your lipid. Feel free to check with me, as this is the fiddliest step.
-•	It will need this layout:
+- setup "free" and "bound" sims – ideally these should be of similar size with respect to number of lipids.
+  - free = single lipid of interest in simple membrane with no protein
+  - bound = lipid bound to your protein
+- Run an equilibration sim of each until 1 µs or so. 
+
+## Step 2: Prepare FEP
+- decide on what your two states will be. 
+  -	e.g. state 0 = lipid of interest, state 1 = generic lipid. 
+  -	e.g. state 0 = two acyl tails, state 1 = one acyl tail
+-	make an itp file for your lipid. Feel free to check with me, as this is the fiddliest step.
+-	It will need this layout:
 
 ```
 [ atoms ]
@@ -22,20 +26,24 @@ o	e.g. state 0 = two acyl tails, state 1 = one acyl tail
 ...
 ```
 
-•	make sure the first columns (id to massa) are from the itp of your state 0 molecule. The last 3 columns (typeb, chargeb, massb) are for your state 1 molecule.
-o	set state 0 to be the state with most beads – makes things easier
-•	If the bead isn’t being perturbed, you don’t need to edit the line – it will copy the info from state 0
-•	Keep bonded terms unchanged
-•	Name the molecule something - it can be whatever (as long as there aren’t any existing molecules with that name in Martini)
-•	then, make a topol.top for your FEP. Make sure you add #include "youritpname.itp", and have the molecule name reflect the new itp. 
-•	make a version of your martini.itp file with Dum atoms if you haven’t got one already, i.e.
-o	add 'Dum 72 0 A 0.0 0.0' to the end of bead types
-o	add '  Dum   Dum     1       0               0' to the end of self terms
+- make sure the first columns (id to massa) are from the itp of your state 0 molecule. The last 3 columns (typeb, chargeb, massb) are for your state 1 molecule.
+  - set state 0 to be the state with most beads
+- If the bead isn’t being perturbed, you don’t need to edit the line – it will copy the info from state 0
+-	Keep bonded terms unchanged unless necessary
+- Name the molecule something - it can be whatever (as long as there aren’t any existing molecules with that name in Martini)
 
-Equilibrium FEP
-====
+Then, make a topol.top for your FEP. Make sure you add #include "youritpname.itp", and have the molecule name reflect the new itp. 
+-	make a version of your martini.itp file with Dum atoms if you haven’t got one already, i.e.
 
-•	make em and md mdps for your FEP. Use the ones you normally use, and add the following code to the bottom:
+add ```Dum 72 0 A 0.0 0.0``` to the end of ``` [ bead types ] ```
+
+add ```Dum   Dum     1       0               0``` to the end of ``` [ self terms ] ```
+
+Then either run step 3A or 3B. Discuss with me if you're unsure which is better,
+
+## Step 3A: Equilibrium FEP
+
+- make em and md mdps for your FEP. Use the ones you normally use, and add the following code to the bottom:
 
 For beads with no charges:
 
@@ -72,7 +80,7 @@ sc-sigma                 = 0.3
 nstdhdl                  = 100
 ```
 
-•	then make a short script to run an em and md for each window (maybe I should write one that anyone can use)
+- then make a short script to run an em and md for each window (maybe I should write one that anyone can use)
 
 pseudocode:
 
@@ -87,18 +95,17 @@ do
 done
 ```
 
-•	The length of each lambda sim will depend on the system. Longer is not necessarily better! In longer sims your lipid may diffuse away at high lambda – this is bad!
-•	I find for simple changes that 12 ns per window works well (the first 2 ns discarded as equilibration). Up to 50 ns for larger changes.
-•	Analyse using either:
-o	https://github.com/MobleyLab/alchemical-analysis
-o	https://github.com/alchemistry/alchemlyb
-•	using flag -f 11 (or another number) to get a “convergence” plot. Flag -s allows you to discard for equilibration (I typically discard about 10% of the frames)
-•	Run 3-5 repeats for statistics
+- The length of each lambda sim will depend on the system. Longer is not necessarily better! In longer sims your lipid may diffuse away at high lambda – this is bad!
+- I find for simple changes that 12 ns per window works well (the first 2 ns discarded as equilibration). Up to 50 ns for larger changes.
+- Analyse using either:
+  - (https://github.com/MobleyLab/alchemical-analysis)
+  - (https://github.com/alchemistry/alchemlyb) 
+- using flag ```-f 11``` (or another number) to get a “convergence” plot. Flag ```-s``` allows you to discard for equilibration (I typically discard about 10% of the frames)
+- Run 3-5 repeats for statistics
 
-Non-equilibrium FEP
-====
+## Step 3B: Non-equilibrium FEP
 
-•	Once you’ve built your free and bound systems, you want to run longish (e.g. 100 ns) simulations of each system in both state 0 and state 1. To do this, add this code to your usual mdp for both state 0 and 1:
+- Once you’ve built your free and bound systems, you want to run longish (e.g. 100 ns) simulations of each system in both state 0 and state 1. To do this, add this code to your usual mdp for both state 0 and 1:
 
 ```
 free-energy       = yes
@@ -111,7 +118,7 @@ sc-power          = 1
 nstdhdl           = 1 
 ```
 
-•	Once you’ve run 100 ns, write snapshots every 1 ns from 25-100 ns using trjconv, and use this to grompp short FEPs using mdps with the following code:
+-	Once you’ve run 100 ns, write snapshots every 1 ns from 25-100 ns using trjconv, and use this to grompp short FEPs using mdps with the following code:
 
 ```
 free-energy       = yes
@@ -124,14 +131,15 @@ sc-power          = 1
 nstdhdl           = 1 
 ```
 
-•	the delta-lambda should be matched to your nsteps i.e. here nsteps is 10000 (200 ps), so delta-lambda is 1/10000 = 1e-04.
-•	Run the FEPs and analyse using:
-o	https://github.com/dseeliger/pmx/blob/master/scripts/analyze_dhdl.py
-•	You’ll need to point it towards your 0>1 and 1>0 calcs
-•	Use the BAR dG for your dG, and the BAR: Conv for your test of convergence (ideally less than 0.5).
-•	Run many repeats of the whole thing (i.e. starting from the 100 ns sims) for statistics.
+- the delta-lambda should be matched to your nsteps i.e. here nsteps is 10000 (200 ps), so delta-lambda is 1/10000 = 1e-04.
+-	Run the FEPs and analyse using:
+  -	(https://github.com/dseeliger/pmx/blob/master/scripts/analyze_dhdl.py)
+-	You’ll need to point it towards your 0>1 and 1>0 calcs
+- Use the BAR dG for your dG, and the BAR: Conv for your test of convergence (ideally less than 0.5).
+-	Run many repeats of the whole thing (i.e. starting from the 100 ns sims) for statistics.
 
-Final analysis:
-•	For both systems, you’re interested in the difference between dGs for the bound and free state, i.e. a ddG.
+## Step 4: Final analysis
+- For both systems, you’re interested in the difference between dGs for the bound and free state, i.e. a ddG.
 
+> insert thermodynamic cycle here at some point
 
