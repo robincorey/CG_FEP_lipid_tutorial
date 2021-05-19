@@ -22,13 +22,17 @@ Steps needed before running any FEP:
 ```
 [ atoms ]
 ;id typea resnr residu atom cgnr   chargea     massa typeb   chargeb massb
- 1   Nda  1     RESNAME     GL0    1      0      72    Q0        1.0     72
+# atom 1 is perturbed from Nda to Q0
+ 1   Nda  1     RESNAME     GL0    1      0      72    Q0        1       72
+# atom 2 is "switched off". I usually don't perturb masses.
+ 2   P4   1     RESNAME     N1     1      0      72    Dum       0       72
+# atom 3 is not perturbed - state B will be set to state A
+ 3   C1   1     RESNAME     C1A    1      0      72   
 ...
 ```
 
 - make sure the first columns (id to massa) are from the itp of your state 0 molecule. The last 3 columns (typeb, chargeb, massb) are for your state 1 molecule.
   - set state 0 to be the state with most beads
-- If the bead isn’t being perturbed, you don’t need to edit the line – it will copy the info from state 0
 -	Keep bonded terms unchanged unless necessary
 - Name the molecule something - it can be whatever (as long as there aren’t any existing molecules with that name in Martini)
 
