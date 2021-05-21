@@ -63,8 +63,7 @@ sc-alpha                = 0.5     ; LJ
 sc-coul                 = no      ; means linear interpolation of Coulomb, Yes would soft core Coulomb too.
 sc-power                = 1       ; only 1 or 2 supported
 sc-sigma                = 0.3
-nstdhdl                 = 1     ; write to dhdl at each step
-nstcalcenergy           = 1
+nstdhdl                 = 100     ; write to dhdl every 100 steps
 ```
 
 For beads with charges:
@@ -82,8 +81,7 @@ sc-alpha                = 0.5     ; LJ
 sc-coul                 = no      ; means linear interpolation of Coulomb, Yes would soft core Coulomb too.
 sc-power                = 1       ; only 1 or 2 supported
 sc-sigma                = 0.3
-nstdhdl                 = 1     ; write to dhdl at each step
-nstcalcenergy           = 1
+nstdhdl                 = 100     ; write to dhdl every 100 steps
 ```
 
 - then make a short script to run an em and md for each window (maybe I should write one that anyone can use)
@@ -121,7 +119,7 @@ sc-coul           = yes
 sc-alpha          = 0.3   
 sc-sigma          = 0.25  
 sc-power          = 1     
-nstdhdl           = 1 
+nstdhdl           = 100
 ```
 
 -	Once you’ve run 100 ns, write snapshots every 1 ns from 25-100 ns using trjconv, and use this to grompp short FEPs using mdps with the following code:
@@ -134,7 +132,7 @@ sc-coul           = yes
 sc-alpha          = 0.3   
 sc-sigma          = 0.25  
 sc-power          = 1     
-nstdhdl           = 1 
+nstdhdl           = 1       ; write to dhdl every step
 ```
 
 - the delta-lambda should be matched to your nsteps i.e. here nsteps is 10000 (200 ps), so delta-lambda is 1/10000 = 1e-04.
