@@ -2,20 +2,21 @@
 
 # Lipid CG FEP overview
 
-How to run equilibrium or non-equilibrium FEP for lipids or lipid-like molecules in Martini using gmx.
+How to run equilibrium or non-equilibrium FEP for lipids or lipid-like molecules with Martini using gmx.
 
 ## Step 1: Initial setup
 
 Steps needed before running any FEP:
-- setup "free" and "bound" sims – ideally these should be of similar size with respect to number of lipids.
+- setup "free" and "bound" sims – ideally these should be of similar size with respect to number of lipids. Differences in lipid number will affect the computed dGs for large transformtions,
   - free = single lipid of interest in simple membrane with no protein
   - bound = lipid bound to your protein
-- Run an equilibration sim of each until 1 µs or so. 
+- Run an equilibration sim of each until 1 µs or so. Make sure your lipid remains in your binding site in the bound sim.
 
 ## Step 2: Prepare FEP
 - decide on what your two states will be. 
   -	e.g. state 0 = lipid of interest, state 1 = generic lipid. 
   -	e.g. state 0 = two acyl tails, state 1 = one acyl tail
+  -	e.g. state 0 = Arg residue, state 1 = Ala residue
 -	make an itp file for your lipid. Feel free to check with me, as this is the fiddliest step.
 -	It will need this layout:
 
@@ -47,7 +48,7 @@ Then either run step 3A or 3B. Discuss with me if you're unsure which is better,
 
 ## Step 3A: Equilibrium FEP
 
-- make em and md mdps for your FEP. Use the ones you normally use, and add the following code to the bottom:
+- make em and md mdps for your FEP. Use the mdp files you'd normally use, and add the following code to the bottom:
 
 For beads with no charges (gmx 2019 and later):
 
@@ -66,7 +67,7 @@ sc-sigma                = 0.3
 nstdhdl                 = 100     ; write to dhdl every 100 steps
 ```
 
-For beads with charges:
+For beads with charges being removed:
 
 ```
 free-energy             = yes
@@ -93,13 +94,13 @@ for i in {0..20}
 do
   mkdir rep_$i
   sed 's/#INIT#/$i/g' em.mdp > rep_$i/em_$i.mdp ;  this will set your lambda state to $i
-  # grompp using your new top, gro and mdp, then run em_$i
+  then grompp using your new top, gro and mdp, then run em_$i
   sed 's/#INIT#/$i/g' md.mdp > rep_$i/md_$i.mdp 
-  # grompp using your new top, gro and mdp, then run md_$i
+  then grompp using your new top, gro and mdp, then run md_$i
 done
 ```
 
-- The length of each lambda sim will depend on the system. Longer is not necessarily better! In longer sims your lipid may diffuse away at high lambda – this is bad!
+- The length of each lambda sim will depend on the system. Longer is not necessarily better! In longer sims your lipid may diffuse away at high lambda – this is bad! Check your sims - does your lipid remain bound at high and low lambdas??
 - I find for simple changes that 12 ns per window works well (the first 2 ns discarded as equilibration). Up to 50 ns for larger changes.
 - Analyse using either:
   - (https://github.com/MobleyLab/alchemical-analysis)
@@ -122,7 +123,9 @@ sc-power          = 1
 nstdhdl           = 100
 ```
 
--	Once you’ve run 100 ns, write snapshots every 1 ns from 25-100 ns using trjconv, and use this to grompp short FEPs using mdps with the following code:
+-	Once you’ve run 100 ns, check the sims look ok, i.e. no lipid leaving binding site
+-	Restraints can be added here if necessary, as no free energies are computed from the 100 ns sims.
+-	Once happy, write snapshots every 1 ns from 25-100 ns using trjconv, and use this to grompp short FEPs using mdps with the following code:
 
 ```
 free-energy       = yes
