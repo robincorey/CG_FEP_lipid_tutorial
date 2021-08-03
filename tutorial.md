@@ -85,6 +85,7 @@ sc-sigma                = 0.3
 nstdhdl                 = 100     ; write to dhdl every 100 steps
 ```
 
+- note that MBAR will only compare between windows which are present in your initial mdp, so if you're planning on adding windows later, it's a good idea to have them present in the mdp to start with.
 - then make a short script to run an em and md for each window (maybe I should write one that anyone can use)
 
 pseudocode:
@@ -105,7 +106,7 @@ done
 - Analyse using either:
   - (https://github.com/MobleyLab/alchemical-analysis)
   - (https://github.com/alchemistry/alchemlyb) 
-- using flag ```-f 11``` (or another number) to get a “convergence” plot. Flag ```-s``` allows you to discard for equilibration (I typically discard about 10% of the frames)
+- using flag ```-f 11``` (or another number) to get a “convergence” plot. Flag ```-s``` allows you to discard for equilibration (I typically discard about 10% of the frames). -w produced an MBAR overlap matrix which is very useful for checking convergence. If using CG, -i can be set to a high number (1000000) to include all frames.
 - Run 3-5 repeats for statistics
 
 ## Step 3B: Non-equilibrium FEP
